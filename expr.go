@@ -33,6 +33,11 @@ type TaggedClosure struct {
 	Exprs []Expr
 }
 
+// Accept implements the Expr interface
+func (expr TaggedClosure) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitTaggedClosure(expr, env)
+}
+
 // GetExpr use to invoke the http get for the provided url(s)
 type GetExpr struct {
 	Tag    *Token
@@ -40,9 +45,19 @@ type GetExpr struct {
 	Header *Expr
 }
 
+// Accept implements the Expr interface
+func (expr GetExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitGetExpr(expr, env)
+}
+
 // PrintExpr prints the provided arguments
 type PrintExpr struct {
 	Args []Expr
+}
+
+// Accept implements the Expr interface
+func (expr PrintExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitPrintExpr(expr, env)
 }
 
 // AssignExpr assigns an expression result to a variable
@@ -51,10 +66,20 @@ type AssignExpr struct {
 	Value Expr
 }
 
+// Accept implements the Expr interface
+func (expr AssignExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitAssignExpr(expr, env)
+}
+
 // CallExpr invokes a callable with the provided arguments
 type CallExpr struct {
 	Name      *Token
 	Arguments []Expr
+}
+
+// Accept implements the Expr interface
+func (expr CallExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitCallExpr(expr, env)
 }
 
 // ClosureExpr is an untagged closure. In contract to a tagged closure which can only appear
@@ -65,10 +90,20 @@ type ClosureExpr struct {
 	Exprs  []Expr
 }
 
+// Accept implements the Expr interface
+func (expr ClosureExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitClosureExpr(expr, env)
+}
+
 // AccessExpr allows to access fields of any object that implements the Getter interface
 type AccessExpr struct {
 	Var   *Token
 	Field *Token
+}
+
+// Accept implements the Expr interface
+func (expr AccessExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitAccessExpr(expr, env)
 }
 
 // HTMLAttrAccessor allows to retrieve attributes of a Node object
@@ -77,9 +112,19 @@ type HTMLAttrAccessor struct {
 	Attr *Token
 }
 
+// Accept implements the Expr interface
+func (expr HTMLAttrAccessor) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitHTMLAttrAccessor(expr, env)
+}
+
 // ArrayExpr initializes an array
 type ArrayExpr struct {
 	Entries []Expr
+}
+
+// Accept implements the Expr interface
+func (expr ArrayExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitArrayExpr(expr, env)
 }
 
 // MapExpr initializes a map
@@ -88,12 +133,27 @@ type MapExpr struct {
 	Values []Expr
 }
 
+// Accept implements the Expr interface
+func (expr MapExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitMapExpr(expr, env)
+}
+
 // LiteralExpr represents a literal value
 type LiteralExpr struct {
 	Value *Token
 }
 
+// Accept implements the Expr interface
+func (expr LiteralExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitLiteralExpr(expr, env)
+}
+
 // IdentExpr defines a variable in a scope
 type IdentExpr struct {
 	Name *Token
+}
+
+// Accept implements the Expr interface
+func (expr IdentExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitIdentExpr(expr, env)
 }
