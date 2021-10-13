@@ -31,5 +31,5 @@ package scraperlang
 										 | accessExpr ) ;
 	mapExpr					-> "{" NEWLINE* mapEntry NEWLINE* ( "," NEWLINE* mapEntry NEWLINE* )* "}" ( NEWLINE | EOF ) ;
 	mapEntry				-> STRING ":" arrayEntry ;
-	primary					-> STRING | NUMBER | TRUE | FALSE | NIL ;
+	primary					-> STRING | NUMBER | TRUE | FALSE | NIL | IDENT ;
 */
