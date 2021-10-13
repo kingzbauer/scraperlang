@@ -1,11 +1,11 @@
 package scraperlang
 
-// Token is the smallest unit of the grammer
-type Token int
+// TokenType is the smallest unit of the grammer
+type TokenType int
 
 // Token types
 const (
-	LeftBracket Token = iota
+	LeftBracket TokenType = iota
 	RightBracket
 	LeftParen
 	RightParen
