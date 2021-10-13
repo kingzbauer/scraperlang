@@ -21,20 +21,22 @@ func _() {
 	_ = x[Equal-10]
 	_ = x[SingleQuote-11]
 	_ = x[DoubleQuote-12]
-	_ = x[Ident-13]
-	_ = x[Tag-14]
-	_ = x[Nil-15]
-	_ = x[True-16]
-	_ = x[False-17]
-	_ = x[String-18]
-	_ = x[Number-19]
-	_ = x[Newline-20]
-	_ = x[EOF-21]
+	_ = x[Minus-13]
+	_ = x[Arrow-14]
+	_ = x[Ident-15]
+	_ = x[Tag-16]
+	_ = x[Nil-17]
+	_ = x[True-18]
+	_ = x[False-19]
+	_ = x[String-20]
+	_ = x[Number-21]
+	_ = x[Newline-22]
+	_ = x[EOF-23]
 }
 
-const _TokenType_name = "LeftBracketRightBracketLeftParenRightParenLeftCurlyBracketRightCurlyBracketCommaPeriodColonTildeEqualSingleQuoteDoubleQuoteIdentTagNilTrueFalseStringNumberNewlineEOF"
+const _TokenType_name = "LeftBracketRightBracketLeftParenRightParenLeftCurlyBracketRightCurlyBracketCommaPeriodColonTildeEqualSingleQuoteDoubleQuoteMinusArrowIdentTagNilTrueFalseStringNumberNewlineEOF"
 
-var _TokenType_index = [...]uint8{0, 11, 23, 32, 42, 58, 75, 80, 86, 91, 96, 101, 112, 123, 128, 131, 134, 138, 143, 149, 155, 162, 165}
+var _TokenType_index = [...]uint8{0, 11, 23, 32, 42, 58, 75, 80, 86, 91, 96, 101, 112, 123, 128, 133, 138, 141, 144, 148, 153, 159, 165, 172, 175}
 
 func (i TokenType) String() string {
 	if i < 0 || i >= TokenType(len(_TokenType_index)-1) {

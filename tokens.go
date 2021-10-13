@@ -18,6 +18,8 @@ const (
 	Equal
 	SingleQuote
 	DoubleQuote
+	Minus
+	Arrow
 
 	Ident
 	Tag

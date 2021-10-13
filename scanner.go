@@ -3,6 +3,7 @@ package scraperlang
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // Token is a lexer/scanner output
@@ -12,6 +13,22 @@ type Token struct {
 	Literal interface{}
 	Line    int
 	Column  int
+}
+
+// Tokens is a slice of tokens
+type Tokens []*Token
+
+func (t Tokens) String() string {
+	buf := &strings.Builder{}
+	for _, token := range t {
+		buf.WriteString(fmt.Sprintf("%v", token))
+		buf.WriteByte(' ')
+		if token.Type == Newline {
+			buf.WriteByte('\n')
+		}
+	}
+
+	return buf.String()
 }
 
 func (t Token) String() string {
@@ -42,7 +59,7 @@ type Scanner struct {
 	column  int
 	src     []byte
 	length  int
-	tokens  []*Token
+	tokens  Tokens
 }
 
 // NewScanner initializes a new scanner
@@ -51,7 +68,7 @@ func NewScanner(src []byte) *Scanner {
 }
 
 // ScanTokens goes through the provided src string and performs lexing
-func (s *Scanner) ScanTokens() (tokens []*Token, err error) {
+func (s *Scanner) ScanTokens() (tokens Tokens, err error) {
 	defer func() {
 		if val := recover(); val != nil {
 			err = val.(error)
@@ -133,6 +150,14 @@ func (s *Scanner) scanToken() {
 		s.addString('"')
 	case '@':
 		s.identifier()
+	case '-':
+		if s.peek() == '>' {
+			s.advance()
+			s.add(Arrow, "->")
+			s.column += 2
+		} else {
+			s.add(Minus, "-")
+		}
 	case ' ':
 		s.column++
 	case '\n':
@@ -181,7 +206,7 @@ func (s *Scanner) addString(delimiter byte) {
 				Msg:    "multiline strings not supported",
 			})
 		}
-		if char == delimiter && s.previous() != '\\' {
+		if char == delimiter && s.src[s.current-2] != '\\' {
 			break
 		}
 	}
