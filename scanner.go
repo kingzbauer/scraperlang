@@ -14,6 +14,10 @@ type Token struct {
 	Column  int
 }
 
+func (t Token) String() string {
+	return fmt.Sprintf("Token[%d:%d]{Type: %s, Lexeme: %s, Literal: %v}", t.Line, t.Column, t.Type, t.Lexeme, t.Literal)
+}
+
 // ScannerError returned when the scanner encounters an unexpected character
 type ScannerError struct {
 	Line, Column int
@@ -127,6 +131,8 @@ func (s *Scanner) scanToken() {
 		s.addString('\'')
 	case '"':
 		s.addString('"')
+	case '@':
+		s.identifier()
 	case ' ':
 		s.column++
 	case '\n':
@@ -188,7 +194,7 @@ func (s *Scanner) addString(delimiter byte) {
 		})
 	}
 	lexeme := string(s.src[s.start:s.current])
-	s.add(String, lexeme, lexeme[1:s.current-1])
+	s.add(String, lexeme, lexeme[1:len(lexeme)-1])
 	s.column += len(lexeme)
 }
 
@@ -222,7 +228,12 @@ func (s *Scanner) identifier() {
 			s.add(False, lexeme, false)
 		}
 	} else {
-		s.add(Ident, lexeme)
+		// Check if it's a tag
+		if s.src[s.start] == '@' {
+			s.add(Tag, lexeme, lexeme[1:])
+		} else {
+			s.add(Ident, lexeme)
+		}
 	}
 
 	s.column += len(lexeme)

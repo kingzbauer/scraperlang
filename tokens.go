@@ -20,6 +20,7 @@ const (
 	DoubleQuote
 
 	Ident
+	Tag
 
 	Nil
 	True
