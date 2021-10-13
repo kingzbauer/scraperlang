@@ -1,2 +1,5 @@
 # Ignore vim temp files
 *.swp
+
+# executable
+sl
