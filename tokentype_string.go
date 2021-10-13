@@ -12,26 +12,28 @@ func _() {
 	_ = x[RightBracket-1]
 	_ = x[LeftParen-2]
 	_ = x[RightParen-3]
-	_ = x[Comma-4]
-	_ = x[Period-5]
-	_ = x[Colon-6]
-	_ = x[Tilde-7]
-	_ = x[Equal-8]
-	_ = x[SingleQuote-9]
-	_ = x[DoubleQuote-10]
-	_ = x[Ident-11]
-	_ = x[Nil-12]
-	_ = x[True-13]
-	_ = x[False-14]
-	_ = x[String-15]
-	_ = x[Number-16]
-	_ = x[Newline-17]
-	_ = x[EOF-18]
+	_ = x[LeftCurlyBracket-4]
+	_ = x[RightCurlyBracket-5]
+	_ = x[Comma-6]
+	_ = x[Period-7]
+	_ = x[Colon-8]
+	_ = x[Tilde-9]
+	_ = x[Equal-10]
+	_ = x[SingleQuote-11]
+	_ = x[DoubleQuote-12]
+	_ = x[Ident-13]
+	_ = x[Nil-14]
+	_ = x[True-15]
+	_ = x[False-16]
+	_ = x[String-17]
+	_ = x[Number-18]
+	_ = x[Newline-19]
+	_ = x[EOF-20]
 }
 
-const _TokenType_name = "LeftBracketRightBracketLeftParenRightParenCommaPeriodColonTildeEqualSingleQuoteDoubleQuoteIdentNilTrueFalseStringNumberNewlineEOF"
+const _TokenType_name = "LeftBracketRightBracketLeftParenRightParenLeftCurlyBracketRightCurlyBracketCommaPeriodColonTildeEqualSingleQuoteDoubleQuoteIdentNilTrueFalseStringNumberNewlineEOF"
 
-var _TokenType_index = [...]uint8{0, 11, 23, 32, 42, 47, 53, 58, 63, 68, 79, 90, 95, 98, 102, 107, 113, 119, 126, 129}
+var _TokenType_index = [...]uint8{0, 11, 23, 32, 42, 58, 75, 80, 86, 91, 96, 101, 112, 123, 128, 131, 135, 140, 146, 152, 159, 162}
 
 func (i TokenType) String() string {
 	if i < 0 || i >= TokenType(len(_TokenType_index)-1) {

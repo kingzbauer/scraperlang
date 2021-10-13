@@ -9,6 +9,8 @@ const (
 	RightBracket
 	LeftParen
 	RightParen
+	LeftCurlyBracket
+	RightCurlyBracket
 	Comma
 	Period
 	Colon
