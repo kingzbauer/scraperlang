@@ -1,11 +1,11 @@
 package token
 
-// TokenType is the smallest unit of the grammer
-type TokenType int
+// Type is the smallest unit of the grammer
+type Type int
 
 // Token types
 const (
-	LeftBracket TokenType = iota
+	LeftBracket Type = iota
 	RightBracket
 	LeftParen
 	RightParen
