@@ -1,4 +1,4 @@
-package scraperlang
+package token
 
 // TokenType is the smallest unit of the grammer
 type TokenType int
