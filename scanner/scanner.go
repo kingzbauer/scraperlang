@@ -1,14 +1,16 @@
-package scraperlang
+package scanner
 
 import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/kingzbauer/scraperlang/token"
 )
 
 // Token is a lexer/scanner output
 type Token struct {
-	Type    TokenType
+	Type    token.Type
 	Lexeme  string
 	Literal interface{}
 	Line    int
@@ -20,10 +22,10 @@ type Tokens []*Token
 
 func (t Tokens) String() string {
 	buf := &strings.Builder{}
-	for _, token := range t {
-		buf.WriteString(fmt.Sprintf("%v", token))
+	for _, t := range t {
+		buf.WriteString(fmt.Sprintf("%v", t))
 		buf.WriteByte(' ')
-		if token.Type == Newline {
+		if t.Type == token.Newline {
 			buf.WriteByte('\n')
 		}
 	}
@@ -32,7 +34,7 @@ func (t Tokens) String() string {
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("Token[%d:%d]{Type: %s, Lexeme: %s, Literal: %v}", t.Line, t.Column, t.Type, t.Lexeme, t.Literal)
+	return fmt.Sprintf("Token[%d:%d]{Type: %s, Lexeme: %v, Literal: %v}", t.Line, t.Column, t.Type, t.Lexeme, t.Literal)
 }
 
 // ScannerError returned when the scanner encounters an unexpected character
@@ -45,10 +47,10 @@ func (err ScannerError) Error() string {
 	return fmt.Sprintf("[%d:%d] %s", err.Line, err.Column, err.Msg)
 }
 
-var keywords = map[string]TokenType{
-	"true":  True,
-	"false": False,
-	"nil":   Nil,
+var keywords = map[string]token.Type{
+	"true":  token.True,
+	"false": token.False,
+	"nil":   token.Nil,
 }
 
 // Scanner given a byte string will go through each byte character and tokenize them
@@ -84,7 +86,7 @@ func (s *Scanner) ScanTokens() (tokens Tokens, err error) {
 	}
 
 	eof := &Token{
-		Type:   EOF,
+		Type:   token.EOF,
 		Line:   s.line,
 		Column: s.column,
 	}
@@ -112,37 +114,37 @@ func (s *Scanner) scanToken() {
 	char := s.advance()
 	switch char {
 	case '[':
-		s.add(LeftBracket, "[")
+		s.add(token.LeftBracket, "[")
 		s.column++
 	case ']':
-		s.add(RightBracket, "]")
+		s.add(token.RightBracket, "]")
 		s.column++
 	case '(':
-		s.add(LeftParen, "(")
+		s.add(token.LeftParen, "(")
 		s.column++
 	case ')':
-		s.add(RightParen, ")")
+		s.add(token.RightParen, ")")
 		s.column++
 	case '{':
-		s.add(LeftCurlyBracket, "{")
+		s.add(token.LeftCurlyBracket, "{")
 		s.column++
 	case '}':
-		s.add(RightCurlyBracket, "}")
+		s.add(token.RightCurlyBracket, "}")
 		s.column++
 	case ',':
-		s.add(Comma, ",")
+		s.add(token.Comma, ",")
 		s.column++
 	case '.':
-		s.add(Period, ".")
+		s.add(token.Period, ".")
 		s.column++
 	case ':':
-		s.add(Colon, ":")
+		s.add(token.Colon, ":")
 		s.column++
 	case '~':
-		s.add(Tilde, "~")
+		s.add(token.Tilde, "~")
 		s.column++
 	case '=':
-		s.add(Equal, "=")
+		s.add(token.Equal, "=")
 		s.column++
 	case '\'':
 		s.addString('\'')
@@ -153,15 +155,15 @@ func (s *Scanner) scanToken() {
 	case '-':
 		if s.peek() == '>' {
 			s.advance()
-			s.add(Arrow, "->")
+			s.add(token.Arrow, "->")
 			s.column += 2
 		} else {
-			s.add(Minus, "-")
+			s.add(token.Minus, "-")
 		}
 	case ' ':
 		s.column++
 	case '\n':
-		s.add(Newline, "\n")
+		s.add(token.Newline, "\n")
 		s.column = 0
 		s.line++
 	default:
@@ -179,7 +181,7 @@ func (s *Scanner) scanToken() {
 	}
 }
 
-func (s *Scanner) add(typ TokenType, lexeme string, literal ...interface{}) {
+func (s *Scanner) add(typ token.Type, lexeme string, literal ...interface{}) {
 	t := &Token{
 		Type:   typ,
 		Column: s.column,
@@ -219,7 +221,7 @@ func (s *Scanner) addString(delimiter byte) {
 		})
 	}
 	lexeme := string(s.src[s.start:s.current])
-	s.add(String, lexeme, lexeme[1:len(lexeme)-1])
+	s.add(token.String, lexeme, lexeme[1:len(lexeme)-1])
 	s.column += len(lexeme)
 }
 
@@ -245,19 +247,19 @@ func (s *Scanner) identifier() {
 	lexeme := string(s.src[s.start:s.current])
 	if keyword, ok := keywords[lexeme]; ok {
 		switch keyword {
-		case Nil:
-			s.add(Nil, lexeme, nil)
-		case True:
-			s.add(True, lexeme, true)
-		case False:
-			s.add(False, lexeme, false)
+		case token.Nil:
+			s.add(token.Nil, lexeme, nil)
+		case token.True:
+			s.add(token.True, lexeme, true)
+		case token.False:
+			s.add(token.False, lexeme, false)
 		}
 	} else {
 		// Check if it's a tag
 		if s.src[s.start] == '@' {
-			s.add(Tag, lexeme, lexeme[1:])
+			s.add(token.Tag, lexeme, lexeme[1:])
 		} else {
-			s.add(Ident, lexeme)
+			s.add(token.Ident, lexeme)
 		}
 	}
 
@@ -294,7 +296,7 @@ func (s *Scanner) number() {
 			Msg:    err.Error(),
 		})
 	}
-	s.add(Number, lexeme, literal)
+	s.add(token.Number, lexeme, literal)
 	s.column += len(lexeme)
 }
 
