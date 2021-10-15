@@ -1,9 +1,13 @@
-package scraperlang
+package parser
+
+import (
+	"github.com/kingzbauer/scraperlang/token"
+)
 
 // Environment provides the API methods to access the variables for different scopes
 type Environment interface {
-	Get(Token) interface{}
-	Set(Token, interface{})
+	Get(token.Token) interface{}
+	Set(token.Token, interface{})
 }
 
 // Visitor implements the visitor pattern interface
@@ -29,7 +33,7 @@ type Expr interface {
 
 // TaggedClosure defines a top level closure which can be identifiable by a name
 type TaggedClosure struct {
-	Name  *Token
+	Name  *token.Token
 	Exprs []Expr
 }
 
@@ -40,7 +44,7 @@ func (expr TaggedClosure) Accept(visitor Visitor, env Environment) interface{} {
 
 // GetExpr use to invoke the http get for the provided url(s)
 type GetExpr struct {
-	Tag    *Token
+	Tag    *token.Token
 	URL    Expr
 	Header *Expr
 }
@@ -62,7 +66,7 @@ func (expr PrintExpr) Accept(visitor Visitor, env Environment) interface{} {
 
 // AssignExpr assigns an expression result to a variable
 type AssignExpr struct {
-	Name  *Token
+	Name  *token.Token
 	Value Expr
 }
 
@@ -73,7 +77,7 @@ func (expr AssignExpr) Accept(visitor Visitor, env Environment) interface{} {
 
 // CallExpr invokes a callable with the provided arguments
 type CallExpr struct {
-	Name      *Token
+	Name      *token.Token
 	Arguments []Expr
 }
 
@@ -86,7 +90,7 @@ func (expr CallExpr) Accept(visitor Visitor, env Environment) interface{} {
 // at the top level score.
 // This specific closure cannot appear on the top level definition
 type ClosureExpr struct {
-	Params Tokens
+	Params token.Tokens
 	Exprs  []Expr
 }
 
@@ -97,8 +101,8 @@ func (expr ClosureExpr) Accept(visitor Visitor, env Environment) interface{} {
 
 // AccessExpr allows to access fields of any object that implements the Getter interface
 type AccessExpr struct {
-	Var   *Token
-	Field *Token
+	Var   *token.Token
+	Field *token.Token
 }
 
 // Accept implements the Expr interface
@@ -108,8 +112,8 @@ func (expr AccessExpr) Accept(visitor Visitor, env Environment) interface{} {
 
 // HTMLAttrAccessor allows to retrieve attributes of a Node object
 type HTMLAttrAccessor struct {
-	Var  *Token
-	Attr *Token
+	Var  *token.Token
+	Attr *token.Token
 }
 
 // Accept implements the Expr interface
@@ -129,7 +133,7 @@ func (expr ArrayExpr) Accept(visitor Visitor, env Environment) interface{} {
 
 // MapExpr initializes a map
 type MapExpr struct {
-	Keys   Tokens
+	Keys   token.Tokens
 	Values []Expr
 }
 
@@ -140,7 +144,7 @@ func (expr MapExpr) Accept(visitor Visitor, env Environment) interface{} {
 
 // LiteralExpr represents a literal value
 type LiteralExpr struct {
-	Value *Token
+	Value *token.Token
 }
 
 // Accept implements the Expr interface
@@ -150,7 +154,7 @@ func (expr LiteralExpr) Accept(visitor Visitor, env Environment) interface{} {
 
 // IdentExpr defines a variable in a scope
 type IdentExpr struct {
-	Name *Token
+	Name *token.Token
 }
 
 // Accept implements the Expr interface

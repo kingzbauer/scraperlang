@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kingzbauer/scraperlang"
+	"github.com/kingzbauer/scraperlang/token"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	scanner := scraperlang.NewScanner(content)
+	scanner := token.NewScanner(content)
 	tokens, err := scanner.ScanTokens()
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)

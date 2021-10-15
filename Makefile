@@ -1,2 +1,2 @@
 scanner:
-	go build -o scanner github.com/kingzbauer/scraperlang/cmd/scanner
+	go build -o scan github.com/kingzbauer/scraperlang/cmd/scanner

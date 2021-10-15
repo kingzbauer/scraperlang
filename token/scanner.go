@@ -1,16 +1,14 @@
-package scanner
+package token
 
 import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/kingzbauer/scraperlang/token"
 )
 
 // Token is a lexer/scanner output
 type Token struct {
-	Type    token.Type
+	Type    Type
 	Lexeme  string
 	Literal interface{}
 	Line    int
@@ -25,7 +23,7 @@ func (t Tokens) String() string {
 	for _, t := range t {
 		buf.WriteString(fmt.Sprintf("%v", t))
 		buf.WriteByte(' ')
-		if t.Type == token.Newline {
+		if t.Type == Newline {
 			buf.WriteByte('\n')
 		}
 	}
@@ -47,10 +45,10 @@ func (err Error) Error() string {
 	return fmt.Sprintf("[%d:%d] %s", err.Line, err.Column, err.Msg)
 }
 
-var keywords = map[string]token.Type{
-	"true":  token.True,
-	"false": token.False,
-	"nil":   token.Nil,
+var keywords = map[string]Type{
+	"true":  True,
+	"false": False,
+	"nil":   Nil,
 }
 
 // Scanner given a byte string will go through each byte character and tokenize them
@@ -86,7 +84,7 @@ func (s *Scanner) ScanTokens() (tokens Tokens, err error) {
 	}
 
 	eof := &Token{
-		Type:   token.EOF,
+		Type:   EOF,
 		Line:   s.line,
 		Column: s.column,
 	}
@@ -114,37 +112,37 @@ func (s *Scanner) scanToken() {
 	char := s.advance()
 	switch char {
 	case '[':
-		s.add(token.LeftBracket, "[")
+		s.add(LeftBracket, "[")
 		s.column++
 	case ']':
-		s.add(token.RightBracket, "]")
+		s.add(RightBracket, "]")
 		s.column++
 	case '(':
-		s.add(token.LeftParen, "(")
+		s.add(LeftParen, "(")
 		s.column++
 	case ')':
-		s.add(token.RightParen, ")")
+		s.add(RightParen, ")")
 		s.column++
 	case '{':
-		s.add(token.LeftCurlyBracket, "{")
+		s.add(LeftCurlyBracket, "{")
 		s.column++
 	case '}':
-		s.add(token.RightCurlyBracket, "}")
+		s.add(RightCurlyBracket, "}")
 		s.column++
 	case ',':
-		s.add(token.Comma, ",")
+		s.add(Comma, ",")
 		s.column++
 	case '.':
-		s.add(token.Period, ".")
+		s.add(Period, ".")
 		s.column++
 	case ':':
-		s.add(token.Colon, ":")
+		s.add(Colon, ":")
 		s.column++
 	case '~':
-		s.add(token.Tilde, "~")
+		s.add(Tilde, "~")
 		s.column++
 	case '=':
-		s.add(token.Equal, "=")
+		s.add(Equal, "=")
 		s.column++
 	case '\'':
 		s.addString('\'')
@@ -155,15 +153,15 @@ func (s *Scanner) scanToken() {
 	case '-':
 		if s.peek() == '>' {
 			s.advance()
-			s.add(token.Arrow, "->")
+			s.add(Arrow, "->")
 			s.column += 2
 		} else {
-			s.add(token.Minus, "-")
+			s.add(Minus, "-")
 		}
 	case ' ':
 		s.column++
 	case '\n':
-		s.add(token.Newline, "\n")
+		s.add(Newline, "\n")
 		s.column = 0
 		s.line++
 	default:
@@ -181,7 +179,7 @@ func (s *Scanner) scanToken() {
 	}
 }
 
-func (s *Scanner) add(typ token.Type, lexeme string, literal ...interface{}) {
+func (s *Scanner) add(typ Type, lexeme string, literal ...interface{}) {
 	t := &Token{
 		Type:   typ,
 		Column: s.column,
@@ -221,7 +219,7 @@ func (s *Scanner) addString(delimiter byte) {
 		})
 	}
 	lexeme := string(s.src[s.start:s.current])
-	s.add(token.String, lexeme, lexeme[1:len(lexeme)-1])
+	s.add(String, lexeme, lexeme[1:len(lexeme)-1])
 	s.column += len(lexeme)
 }
 
@@ -247,19 +245,19 @@ func (s *Scanner) identifier() {
 	lexeme := string(s.src[s.start:s.current])
 	if keyword, ok := keywords[lexeme]; ok {
 		switch keyword {
-		case token.Nil:
-			s.add(token.Nil, lexeme, nil)
-		case token.True:
-			s.add(token.True, lexeme, true)
-		case token.False:
-			s.add(token.False, lexeme, false)
+		case Nil:
+			s.add(Nil, lexeme, nil)
+		case True:
+			s.add(True, lexeme, true)
+		case False:
+			s.add(False, lexeme, false)
 		}
 	} else {
 		// Check if it's a tag
 		if s.src[s.start] == '@' {
-			s.add(token.Tag, lexeme, lexeme[1:])
+			s.add(Tag, lexeme, lexeme[1:])
 		} else {
-			s.add(token.Ident, lexeme)
+			s.add(Ident, lexeme)
 		}
 	}
 
@@ -296,7 +294,7 @@ func (s *Scanner) number() {
 			Msg:    err.Error(),
 		})
 	}
-	s.add(token.Number, lexeme, literal)
+	s.add(Number, lexeme, literal)
 	s.column += len(lexeme)
 }
 
