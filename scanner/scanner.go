@@ -37,13 +37,13 @@ func (t Token) String() string {
 	return fmt.Sprintf("Token[%d:%d]{Type: %s, Lexeme: %v, Literal: %v}", t.Line, t.Column, t.Type, t.Lexeme, t.Literal)
 }
 
-// ScannerError returned when the scanner encounters an unexpected character
-type ScannerError struct {
+// Error returned when the scanner encounters an unexpected character
+type Error struct {
 	Line, Column int
 	Msg          string
 }
 
-func (err ScannerError) Error() string {
+func (err Error) Error() string {
 	return fmt.Sprintf("[%d:%d] %s", err.Line, err.Column, err.Msg)
 }
 
@@ -172,7 +172,7 @@ func (s *Scanner) scanToken() {
 		} else if s.isDigit(char) {
 			s.number()
 		} else {
-			panic(ScannerError{
+			panic(Error{
 				Line:   s.line,
 				Column: s.column,
 				Msg:    fmt.Sprintf("encountered unexpected token %q", char),
@@ -202,7 +202,7 @@ func (s *Scanner) addString(delimiter byte) {
 	for !s.isAtEnd() {
 		char := s.advance()
 		if char == '\n' {
-			panic(ScannerError{
+			panic(Error{
 				Line:   s.line,
 				Column: s.column,
 				Msg:    "multiline strings not supported",
@@ -214,7 +214,7 @@ func (s *Scanner) addString(delimiter byte) {
 	}
 
 	if s.previous() != delimiter {
-		panic(ScannerError{
+		panic(Error{
 			Line:   s.line,
 			Column: s.column,
 			Msg:    "unterminated string",
@@ -276,7 +276,7 @@ func (s *Scanner) number() {
 		s.advance()
 		// We expect at least one digit charater after a period
 		if !s.isDigit(s.peek()) {
-			panic(ScannerError{
+			panic(Error{
 				Line:   s.line,
 				Column: s.column + s.current - s.start,
 				Msg:    "expects a fraction value after period",
@@ -290,7 +290,7 @@ func (s *Scanner) number() {
 	lexeme := string(s.src[s.start:s.current])
 	literal, err := strconv.ParseFloat(lexeme, 64)
 	if err != nil {
-		panic(ScannerError{
+		panic(Error{
 			Line:   s.line,
 			Column: s.column,
 			Msg:    err.Error(),
