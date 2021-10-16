@@ -46,7 +46,7 @@ func (expr TaggedClosure) Accept(visitor Visitor, env Environment) interface{} {
 type GetExpr struct {
 	Tag    *token.Token
 	URL    Expr
-	Header *Expr
+	Header Expr
 }
 
 // Accept implements the Expr interface
