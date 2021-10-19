@@ -24,6 +24,10 @@ const (
 	Ident
 	Tag
 
+	Print
+	Get
+	Post
+
 	Nil
 	True
 	False
