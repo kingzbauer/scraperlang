@@ -205,7 +205,21 @@ func (p *Parser) arrayExpr() Expr {
 }
 
 func (p *Parser) closure() Expr {
-	return nil
+	// parameter list
+	// If the next token is not a closing paren, we expect a parameter list
+	paramList := token.Tokens{}
+	if p.peek().Type != token.RightParen {
+		t := p.consume("Expect a parameter entry", token.Ident)
+		paramList = append(paramList, t)
+		for p.match(token.Comma) {
+			p.eatAll(token.Newline)
+			t := p.consume("Expect a parameter entry", token.Ident)
+			paramList = append(paramList, t)
+		}
+	}
+	p.consume("A closure requires a body", token.LeftBracket)
+	body := p.body()
+	return ClosureExpr{Params: paramList, Body: body}
 }
 
 func (p *Parser) primary() Expr {

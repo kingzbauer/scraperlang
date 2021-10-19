@@ -92,7 +92,7 @@ func (expr CallExpr) Accept(visitor Visitor, env Environment) interface{} {
 // This specific closure cannot appear on the top level definition
 type ClosureExpr struct {
 	Params token.Tokens
-	Exprs  []Expr
+	Body   []Expr
 }
 
 // Accept implements the Expr interface
