@@ -2,38 +2,24 @@ package scraperlang
 
 /*
 	document				-> global_defs* ;
-	global_defs 		-> NEWLINE* tagged_closure ( NEWLINE+ | EOF ) ;
-	tagged_closure	-> IDENT "{" ( NEWLINE+ expr_statements* )? "}";
-	builtin_funcs		-> getExpr | printExpr ;
-	expr_statements	-> ( expressions | builtin_funcs ) terminator ;
-	expression 			-> assignExpr |
-										 callExpr |
-										 closureExpr |
-										 accessExpr |
-										 htmlAttrAccessor |
-										 arrayExpr |
-										 mapExpr |
-										 mapAccess |
-										 arrayAccess |
-										 primary ;
+	global_defs 		-> NEWLINE* tagged_closure* ( NEWLINE+ | EOF ) ;
+	tagged_closure	-> IDENT body ;
+	body 						-> "{" ( NEWLINE+ expr_statements* )? "}" ;
+	builtin_funcs		-> ( getExpr | printExpr ) NEWLINE ;
+	expr_statements	-> ( assign | builtin_funcs | callExpr ) NEWLINE ;
 	getExpr					-> tag? "get" expression ("," expression) ;
 	tag							-> "@"IDENT ;
-	assignExpr 			-> IDENT "=" ( primary | expression ) ;
-	printExpr				-> expression ( "," expression )* ;
-	callExpr				-> IDENT expression ( "," expression ) ;
-	closureExpr			-> "(" params? ")" "{" expr_statements* "}" ;
-	accessExpr 			-> IDENT "." IDENT ;
-	htmlAttrAccessor-> IDENT "~" IDENT ;
-	arrayExpr				-> "[" NEWLINE* arrayEntry NEWLINE* ( "," NEWLINE* valueExpr NEWLINE )* "]" ;
-	valueExpr				-> ( primary
-										 | callExpr
-										 | arrayExpr
-										 | mapExpr
-										 | htmlAttrAccessor
-										 | accessExpr ) ;
+	printExpr				-> "print" expression ( "," expression )* ;
+	closure					-> "(" params? ")" body ;
+	arrayExpr				-> "[" NEWLINE* expression NEWLINE* ( "," NEWLINE* expression NEWLINE )* "]" ;
 	mapExpr					-> "{" NEWLINE* mapEntry NEWLINE* ( "," NEWLINE* mapEntry NEWLINE* )* "}" ;
-	mapEntry				-> STRING ":" valueExpr ;
-	mapAccess				-> IDENT "[" STRING "]" ;
+	mapEntry				-> STRING ":" expression ;
+
+	callExpr				-> IDENT expression ( "," expression ) ;
+	assign					-> IDENT "=" ( expression ) ;
+	expression 			-> ( ( htmlAttrAccessor ( ( "(" arguments? ")" ) |
+										 ( "[" expression "]" ) |
+									 		"." IDENT )* ) | mapExpr | arrayExpr | closure ) ;
+	htmlAttrAccessor-> primary ( "~" IDENT )? ;
 	primary					-> STRING | NUMBER | TRUE | FALSE | NIL | IDENT ;
-	terminator			-> NEWLINE+ ;
 */

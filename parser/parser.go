@@ -110,8 +110,8 @@ func (p *Parser) getExpr() Expr {
 			return
 		}
 
-		urlExpr := p.valueExpr()
-		headerExpr := p.valueExpr()
+		urlExpr := p.expression()
+		headerExpr := p.expression()
 		expr.URL = urlExpr
 		expr.Header = headerExpr
 	}
@@ -127,7 +127,8 @@ func (p *Parser) getExpr() Expr {
 	return expr
 }
 
-func (p *Parser) valueExpr() Expr {
+func (p *Parser) expression() Expr {
+
 	return nil
 }
 
