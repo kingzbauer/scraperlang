@@ -197,7 +197,29 @@ func (p *Parser) expressionList(delimiter token.Type) []Expr {
 }
 
 func (p *Parser) mapExpr() Expr {
-	return nil
+	// Consume any newlines if any
+	p.eatAll(token.Newline)
+	entries := make(map[string]Expr)
+	// if the next token is not a closing curly bracket, process map entries
+	if p.peek().Type != token.RightBracket {
+		key, value := p.mapEntry()
+		entries[key.Literal.(string)] = value
+		for p.match(token.Comma) {
+			p.eatAll(token.Newline)
+			key, value = p.mapEntry()
+			entries[key.Literal.(string)] = value
+		}
+	}
+	p.consume("expect closing '}'", token.RightCurlyBracket)
+	return MapExpr{Entries: entries}
+}
+
+func (p *Parser) mapEntry() (*token.Token, Expr) {
+	// For now, only keys of type string are allowed
+	key := p.consume("expect a key of type 'string'", token.String)
+	p.consume("expect ':'", token.Colon)
+	value := p.expression()
+	return key, value
 }
 
 func (p *Parser) arrayExpr() Expr {

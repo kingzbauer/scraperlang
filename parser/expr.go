@@ -145,8 +145,7 @@ func (expr ArrayExpr) Accept(visitor Visitor, env Environment) interface{} {
 
 // MapExpr initializes a map
 type MapExpr struct {
-	Keys   token.Tokens
-	Values []Expr
+	Entries map[string]Expr
 }
 
 // Accept implements the Expr interface
