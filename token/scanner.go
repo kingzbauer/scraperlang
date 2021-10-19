@@ -49,6 +49,9 @@ var keywords = map[string]Type{
 	"true":  True,
 	"false": False,
 	"nil":   Nil,
+	"print": Print,
+	"get":   Get,
+	"post":  Post,
 }
 
 // Scanner given a byte string will go through each byte character and tokenize them
@@ -251,6 +254,8 @@ func (s *Scanner) identifier() {
 			s.add(True, lexeme, true)
 		case False:
 			s.add(False, lexeme, false)
+		default:
+			s.add(keyword, lexeme)
 		}
 	} else {
 		// Check if it's a tag

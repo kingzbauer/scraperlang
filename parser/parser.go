@@ -63,16 +63,16 @@ func (p *Parser) taggledClosure() Expr {
 	p.eatAll(token.Newline)
 	closureName := p.consume("Expected a tagged closure", token.Ident)
 	p.consume("Expected '{' to start the closure body", token.LeftCurlyBracket)
-	p.consume("Expected the closure body", token.Newline, token.RightCurlyBracket)
-	p.eatAll(token.Newline)
+	//p.consume("Expected the closure body", token.Newline, token.RightCurlyBracket)
+	//p.eatAll(token.Newline)
 
-	// If the previous token to be consume is `}` then we are done here
-	// we have an empty closure
-	if p.previous().Type == token.RightCurlyBracket {
-		return TaggedClosure{Name: closureName}
-	}
+	//// If the previous token to be consume is `}` then we are done here
+	//// we have an empty closure
+	//if p.previous().Type == token.RightCurlyBracket {
+	//return TaggedClosure{Name: closureName}
+	//}
 
-	// proceed to consume the body
+	//// proceed to consume the body
 
 	return nil
 }
@@ -80,56 +80,155 @@ func (p *Parser) taggledClosure() Expr {
 func (p *Parser) body() []Expr {
 	var exprs []Expr
 
-	for !p.check(token.RightCurlyBracket) {
-		current := p.peek()
-		if current.Type == token.Tag || current.Type == token.Ident && current.Lexeme == "get" {
+	// At the moment we expect at least one new line after the opening curly bracket
+	p.consume("Expect a Newline after and opening bracket", token.Newline)
+	p.eatAll(token.Newline)
+
+	for !p.check(token.RightCurlyBracket, token.EOF) {
+		t := p.advance()
+		switch t.Type {
+		case token.Tag:
+			p.consume("Expect a get expression after a tag", token.Get)
+			exprs = append(exprs, p.getExpr(t))
+		case token.Get:
 			exprs = append(exprs, p.getExpr())
+		case token.Print:
+		case token.Ident:
+		default:
+			panic(Error{
+				token: t,
+				msg:   "Invalid expression statement as a top-level statement",
+			})
 		}
 	}
 
 	return exprs
 }
 
-func (p *Parser) getExpr() Expr {
+func (p *Parser) getExpr(tag ...*token.Token) Expr {
 	expr := GetExpr{}
-
-	getParams := func() {
-		ident := p.consume("Expected a 'get' expression", token.Ident)
-		if ident.Lexeme != "get" {
-			p.addErr(Error{
-				token: ident,
-				msg:   "Expected a 'get' expression",
-			})
-			p.eatUntil(token.Newline)
-			if p.isAtEnd() {
-				panic(Error{
-					token: p.previous(),
-					msg:   "Got an unexpected EOF",
-				})
-			}
-			return
-		}
-
-		urlExpr := p.expression()
-		headerExpr := p.expression()
-		expr.URL = urlExpr
-		expr.Header = headerExpr
+	if len(tag) > 0 {
+		expr.Tag = tag[0]
 	}
 
-	t := p.consume("Expected a tag or function 'get'", token.Tag, token.Ident)
-	if t.Type == token.Tag {
-		expr.Tag = t
-		getParams()
-	} else {
-		getParams()
-	}
+	// We expect at least a single expression as the first argument
+	URL := p.expression()
+	expr.URL = URL
 
 	return expr
 }
 
 func (p *Parser) expression() Expr {
+	expr := p.htmlAttrAccessor()
+	return expr
+}
 
+func (p *Parser) htmlAttrAccessor() Expr {
+	expr := p.accessor()
+	if p.match(token.Tilde) {
+		attr := p.consume("HTML attribute identifier expected", token.Ident)
+		return HTMLAttrAccessor{Var: expr, Attr: attr}
+	}
+	return expr
+}
+
+// TODO: Rename this
+func (p *Parser) accessor() Expr {
+	switch p.peek().Type {
+	case token.LeftParen:
+		p.advance()
+		return p.closure()
+	case token.LeftBracket:
+		p.advance()
+		return p.arrayExpr()
+	case token.LeftCurlyBracket:
+		p.advance()
+		return p.mapExpr()
+	default:
+		expr := p.primary()
+		for {
+			switch p.peek().Type {
+			case token.LeftParen:
+				p.advance()
+				arguments := p.expressionList(token.RightParen)
+				p.consume("Call expression requires a closing ')'", token.RightParen)
+				expr = CallExpr{Name: expr, Arguments: arguments}
+			case token.LeftBracket:
+				p.advance()
+				if p.peek().Type == token.RightBracket {
+					panic(Error{
+						token: p.advance(),
+						msg:   "Missing 'Key' value for accessing the map/array",
+					})
+					key := p.expression()
+					p.consume("Expected ']'", token.RightBracket)
+					expr = MapAccessExpr{Name: expr, Key: key}
+				}
+			case token.Period:
+				p.advance()
+				ident := p.consume("Expect an attribute name after a '.'", token.Ident)
+				expr = AccessExpr{Var: expr, Field: ident}
+			default:
+				break
+			}
+		}
+		return expr
+	}
+}
+
+// expressionList returns 0 or more expressions separated with a comma
+// We use the delimiter token to know if we need to return an empty list if
+// encountered as the first thing
+func (p *Parser) expressionList(delimiter token.Type) []Expr {
+	// Empty expression list
+	if p.match(delimiter) {
+		return nil
+	}
+	exprs := []Expr{p.expression()}
+
+	if p.match(token.Comma) {
+		// We can allow at most  one Newline after a comma
+		p.eatAll(token.Newline)
+		expr := p.expression()
+		exprs = append(exprs, expr)
+	}
+
+	return exprs
+}
+
+func (p *Parser) mapExpr() Expr {
 	return nil
+}
+
+func (p *Parser) arrayExpr() Expr {
+	return nil
+}
+
+func (p *Parser) closure() Expr {
+	return nil
+}
+
+func (p *Parser) primary() Expr {
+	t := p.advance()
+	switch t.Type {
+	case token.Number:
+		fallthrough
+	case token.String:
+		fallthrough
+	case token.True:
+		fallthrough
+	case token.False:
+		fallthrough
+	case token.Nil:
+		fallthrough
+	case token.Ident:
+		return LiteralExpr{t}
+	default:
+		panic(Error{
+			token: t,
+			msg:   "Unexpected token",
+		})
+	}
 }
 
 func (p *Parser) isAtEnd() bool {
@@ -137,6 +236,12 @@ func (p *Parser) isAtEnd() bool {
 }
 
 func (p *Parser) advance() *token.Token {
+	if p.isAtEnd() {
+		panic(Error{
+			msg: "Unexpected end of file",
+		})
+	}
+
 	t := p.tokens[p.current]
 	p.current++
 	return t

@@ -24,6 +24,7 @@ type Visitor interface {
 	VisitMapExpr(MapExpr, Environment) interface{}
 	VisitLiteralExpr(LiteralExpr, Environment) interface{}
 	VisitIdentExpr(IdentExpr, Environment) interface{}
+	VisitMapAccessExpr(MapAccessExpr, Environment) interface{}
 }
 
 // Expr every expression type must implement the expression interface
@@ -77,7 +78,7 @@ func (expr AssignExpr) Accept(visitor Visitor, env Environment) interface{} {
 
 // CallExpr invokes a callable with the provided arguments
 type CallExpr struct {
-	Name      *token.Token
+	Name      Expr
 	Arguments []Expr
 }
 
@@ -101,7 +102,7 @@ func (expr ClosureExpr) Accept(visitor Visitor, env Environment) interface{} {
 
 // AccessExpr allows to access fields of any object that implements the Getter interface
 type AccessExpr struct {
-	Var   *token.Token
+	Var   Expr
 	Field *token.Token
 }
 
@@ -110,9 +111,20 @@ func (expr AccessExpr) Accept(visitor Visitor, env Environment) interface{} {
 	return visitor.VisitAccessExpr(expr, env)
 }
 
+// MapAccessExpr allows accessing an element from a slice by index of map key
+type MapAccessExpr struct {
+	Name Expr
+	Key  Expr
+}
+
+// Accept implements the Expr interface
+func (expr MapAccessExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitMapAccessExpr(expr, env)
+}
+
 // HTMLAttrAccessor allows to retrieve attributes of a Node object
 type HTMLAttrAccessor struct {
-	Var  *token.Token
+	Var  Expr
 	Attr *token.Token
 }
 
