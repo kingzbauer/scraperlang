@@ -97,17 +97,50 @@ func (p *Parser) body() []Expr {
 		case token.Print:
 			exprs = append(exprs, p.printExpr())
 		case token.Ident:
+			if p.match(token.Equal) {
+				// Process an assignment
+				exprs = append(exprs, p.assignExpr(t))
+			} else if p.match(token.LeftParen) {
+				// Process a call expression
+				argList := p.expressionList(token.RightParen)
+				exprs = append(exprs, CallExpr{Name: LiteralExpr{Value: t}, Arguments: argList})
+				p.consume("Call expression requires a closing ')'", token.RightParen)
+			} else if p.match(token.Newline) {
+				p.addErr(Error{
+					msg:   "call expression without parenthesis requires at least one argument",
+					token: p.previous(),
+				})
+				exprs = append(exprs, CallExpr{Name: LiteralExpr{Value: t}})
+			} else {
+				// This should ideally be a call expression without the parenthesis
+				// Requires at least one expression
+				argList := p.expressionList()
+				if len(argList) == 0 {
+					p.addErr(Error{
+						msg:   fmt.Sprintf("If this is a function, it requires at least one argument"),
+						token: t,
+					})
+				}
+				exprs = append(exprs, CallExpr{Name: LiteralExpr{Value: t}, Arguments: argList})
+			}
 		default:
 			panic(Error{
 				token: t,
 				msg:   "Invalid expression statement as a top-level statement",
 			})
 		}
+		// Consume a Newline after each expression statement
+		p.consume("Expect a 'Newline'", token.Newline)
 		p.eatAll(token.Newline)
 	}
 
 	p.consume("Expect '}' to close body", token.RightCurlyBracket)
 	return exprs
+}
+
+func (p *Parser) assignExpr(t *token.Token) Expr {
+	value := p.expression()
+	return AssignExpr{Name: t, Value: value}
 }
 
 func (p *Parser) getExpr(tag ...*token.Token) Expr {
@@ -121,12 +154,10 @@ func (p *Parser) getExpr(tag ...*token.Token) Expr {
 	expr.URL = URL
 
 	// We expect an optional header argument and then a newline to complete the statement
-	if !p.match(token.Newline) {
+	if !p.check(token.Newline) {
 		p.consume("Expect ','", token.Comma)
 		httpHeaderExpr := p.expression()
 		expr.Header = httpHeaderExpr
-		// Consume a Newline
-		p.consume("Expect a 'Newline'", token.Newline)
 	}
 
 	return expr
@@ -143,7 +174,6 @@ func (p *Parser) printExpr() Expr {
 		p.eatAll(token.Newline)
 		args = append(args, p.expression())
 	}
-	p.consume("Expect 'Newline'", token.Newline)
 	expr.Args = args
 
 	return expr
@@ -209,9 +239,11 @@ func (p *Parser) accessor() Expr {
 // expressionList returns 0 or more expressions separated with a comma
 // We use the delimiter token to know if we need to return an empty list if
 // the delimiter is encountered as the first thing
-func (p *Parser) expressionList(delimiter token.Type) []Expr {
+//
+// TODO: we might want to handle consuming the delimiter here if it's provided
+func (p *Parser) expressionList(delimiter ...token.Type) []Expr {
 	// Empty expression list
-	if p.match(delimiter) {
+	if p.check(delimiter...) {
 		return nil
 	}
 	exprs := []Expr{p.expression()}

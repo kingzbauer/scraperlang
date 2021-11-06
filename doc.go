@@ -15,7 +15,7 @@ package scraperlang
 	mapExpr					-> "{" NEWLINE* mapEntry NEWLINE* ( "," NEWLINE* mapEntry NEWLINE* )* "}" ;
 	mapEntry				-> STRING ":" expression ;
 
-	callExpr				-> IDENT expression ( "," expression ) ;
+	callExpr				-> IDENT expression ( "," expression )* ;
 	assign					-> IDENT "=" ( expression ) ;
 	expression 			-> htmlAttrAccessor ;
 	htmlAttrAccessor-> accessor ( "~" IDENT )? ;
