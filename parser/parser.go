@@ -97,6 +97,7 @@ func (p *Parser) body() []Expr {
 		}
 	}
 
+	p.consume("Expect '}' to close body", token.RightCurlyBracket)
 	return exprs
 }
 
