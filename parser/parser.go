@@ -346,14 +346,28 @@ func (p *Parser) closure() Expr {
 	// parameter list
 	// If the next token is not a closing paren, we expect a parameter list
 	paramList := token.Tokens{}
+	duplicateCheck := make(map[string]string)
 	if p.peek().Type != token.RightParen {
 		t := p.consume("Expect a parameter entry", token.Ident)
+		duplicateCheck[t.Lexeme] = ""
 		paramList = append(paramList, t)
 		for p.match(token.Comma) {
 			p.eatAll(token.Newline)
 			t := p.consume("Expect a parameter entry", token.Ident)
+			if _, ok := duplicateCheck[t.Lexeme]; ok {
+				p.addErr(Error{
+					msg:   fmt.Sprintf("duplicate parameter %q", t.Lexeme),
+					token: t,
+				})
+			}
 			paramList = append(paramList, t)
 		}
+	}
+	if len(paramList) > 255 {
+		p.addErr(Error{
+			msg:   fmt.Sprintf("%d exceeded maximum parameter list of %d", len(paramList), 255),
+			token: paramList[len(paramList)-1],
+		})
 	}
 	p.consume("A closure requires a body", token.RightParen)
 	p.consume("Missing '{' to start the closure body", token.LeftCurlyBracket)

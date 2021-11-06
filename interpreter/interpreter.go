@@ -99,12 +99,33 @@ func (i *Interpreter) VisitAssignExpr(expr parser.AssignExpr, e parser.Environme
 	return val
 }
 
-func (i *Interpreter) VisitCallExpr(_ parser.CallExpr, _ parser.Environment) interface{} {
-	panic("not implemented") // TODO: Implement
+// VisitCallExpr executes the callable with the given arguments
+func (i *Interpreter) VisitCallExpr(expr parser.CallExpr, e parser.Environment) interface{} {
+	val := expr.Name.Accept(i, e)
+	callable, ok := val.(Callable)
+	if !ok {
+		panic(Error{
+			msg: fmt.Sprintf("%q is not a callable", val),
+		})
+	}
+	if callable.Arity() != len(expr.Arguments) {
+		panic(Error{
+			msg: fmt.Sprintf("Expect %d arguments, got %d", callable.Arity(), len(expr.Arguments)),
+		})
+	}
+
+	args := make([]interface{}, len(expr.Arguments))
+	// Eval every argument expression
+	for index, exp := range expr.Arguments {
+		args[index] = exp.Accept(i, e)
+	}
+
+	return callable.Call(args...)
 }
 
-func (i *Interpreter) VisitClosureExpr(_ parser.ClosureExpr, _ parser.Environment) interface{} {
-	panic("not implemented") // TODO: Implement
+// VisitClosureExpr creates a new callable from the closure expression
+func (i *Interpreter) VisitClosureExpr(expr parser.ClosureExpr, e parser.Environment) interface{} {
+	return NewClosure(e, expr, i)
 }
 
 func (i *Interpreter) VisitAccessExpr(_ parser.AccessExpr, _ parser.Environment) interface{} {
