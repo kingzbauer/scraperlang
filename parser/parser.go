@@ -15,7 +15,7 @@ type Error struct {
 func (err Error) Error() string {
 	prefix := ""
 	if err.token != nil {
-		prefix = fmt.Sprintf("[%d:%d]", err.token.Line, err.token.Column)
+		prefix = fmt.Sprintf("[%d:%d]", err.token.Line+1, err.token.Column)
 	}
 	return fmt.Sprintf("%s %s", prefix, err.msg)
 }
@@ -189,6 +189,15 @@ func (p *Parser) htmlAttrAccessor() Expr {
 	if p.match(token.Tilde) {
 		attr := p.consume("HTML attribute identifier expected", token.Ident)
 		return HTMLAttrAccessor{Var: expr, Attr: attr}
+	} else if !p.check(
+		token.Newline,
+		token.Comma,
+		token.RightBracket,
+		token.RightCurlyBracket,
+		token.RightParen) {
+		// We need to get an argument list
+		argList := p.expressionList()
+		expr = CallExpr{Name: expr, Arguments: argList}
 	}
 	return expr
 }
@@ -263,7 +272,7 @@ func (p *Parser) mapExpr() Expr {
 	p.eatAll(token.Newline)
 	entries := make(map[string]Expr)
 	// if the next token is not a closing curly bracket, process map entries
-	if p.peek().Type != token.RightBracket {
+	if p.peek().Type != token.RightCurlyBracket {
 		key, value := p.mapEntry()
 		entries[key.Literal.(string)] = value
 		for p.match(token.Comma) {

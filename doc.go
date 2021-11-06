@@ -18,7 +18,7 @@ package scraperlang
 	callExpr				-> IDENT expression ( "," expression )* ;
 	assign					-> IDENT "=" ( expression ) ;
 	expression 			-> htmlAttrAccessor ;
-	htmlAttrAccessor-> accessor ( "~" IDENT )? ;
+	htmlAttrAccessor-> accessor (  ( "~"? IDENT ) | expression ( "," expression )* )? ;
 	accessor 				-> ( ( primary ( ( "(" arguments? ")" ) |
 										 ( "[" expression "]" ) |
 									 		"." IDENT )* ) | mapExpr | arrayExpr | closure ) ;
