@@ -20,4 +20,9 @@ func main() {
 	ast, err := p.Parse()
 	cmdutil.ExitOnError(err)
 	fmt.Println(ast)
+	if p.HasErrs() {
+		for _, err := range p.Err() {
+			fmt.Println(err)
+		}
+	}
 }

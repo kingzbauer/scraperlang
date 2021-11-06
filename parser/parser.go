@@ -37,6 +37,11 @@ func (p *Parser) Err() []error {
 	return p.errs
 }
 
+// HasErrs checks to see whether we have any parser errors
+func (p *Parser) HasErrs() bool {
+	return len(p.errs) > 0
+}
+
 func (p *Parser) addErr(err error) {
 	p.errs = append(p.errs, err)
 }
@@ -105,6 +110,19 @@ func (p *Parser) body() []Expr {
 				argList := p.expressionList(token.RightParen)
 				exprs = append(exprs, CallExpr{Name: LiteralExpr{Value: t}, Arguments: argList})
 				p.consume("Call expression requires a closing ')'", token.RightParen)
+			} else if p.match(token.Period) {
+				// parse an attribute function call
+				field := p.consume("Expect an field accessor after '.'", token.Ident)
+				var argList []Expr
+				if p.match(token.LeftParen) {
+					argList = p.expressionList(token.RightParen)
+					p.consume("Expect ')' to close functin call", token.RightParen)
+				} else {
+					// This is a free form function call which needs at least one argument
+					argList = p.expressionList()
+				}
+				accessExpr := AccessExpr{Var: LiteralExpr{Value: t}, Field: field}
+				exprs = append(exprs, CallExpr{Name: accessExpr, Arguments: argList})
 			} else if p.check(token.Newline) {
 				p.addErr(Error{
 					msg:   "call expression without parenthesis requires at least one argument",
@@ -255,6 +273,17 @@ func (p *Parser) expressionList(delimiter ...token.Type) []Expr {
 	if p.check(delimiter...) {
 		return nil
 	}
+
+	// We check if we have a new line.
+	// This means that we have an empty expression list without a delimiter which should be an error
+	if p.check(token.Newline) {
+		p.addErr(Error{
+			msg:   "A free form call expression requires at least a single argument",
+			token: p.peek(),
+		})
+		return nil
+	}
+
 	exprs := []Expr{p.expression()}
 
 	for p.match(token.Comma) {

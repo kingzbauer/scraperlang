@@ -6,10 +6,11 @@ package scraperlang
 	tagged_closure	-> IDENT body ;
 	body 						-> "{" ( NEWLINE+ expr_statements* )? "}" ;
 	builtin_funcs		-> ( getExpr | printExpr ) NEWLINE ;
-	expr_statements	-> ( assign | builtin_funcs | callExpr ) NEWLINE ;
+	expr_statements	-> ( assign | builtin_funcs | callExpr | attrFuncCall )  NEWLINE ;
 	getExpr					-> tag? "get" expression ("," expression) ;
 	tag							-> "@"IDENT ;
 	printExpr				-> "print" expression ( "," expression )* ;
+	attrFuncCall		-> IDENT "." IDENT ( ( "(" argumentList? ")" ) |  argumentList ) ;
 	closure					-> "(" params? ")" body ;
 	arrayExpr				-> "[" NEWLINE* expression NEWLINE* ( "," NEWLINE* expression NEWLINE* )* "]" ;
 	mapExpr					-> "{" NEWLINE* mapEntry NEWLINE* ( "," NEWLINE* mapEntry NEWLINE* )* "}" ;

@@ -17,12 +17,12 @@ anchors {
   print headers, headers['Content-Length']
   print headers['Content-Type']
   anchors = jq 'a#base'
-  anchors.loop () {
+  anchors.loop(() {
     @anchor get it~href
     print it~id
-  }
+  })
   closure = (item, index ) {
     @anchor get item~href
   }
-  anchors.loop closure
+  anchors.loop  closure
 }

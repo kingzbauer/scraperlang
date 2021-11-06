@@ -1,5 +1,5 @@
 init {
-  @closure get "http://www.chura.co.ke", { "Authorization": "Token asdflkjasdflj" }
+  @closure get "http://www.chura.co.ke", { "Authorization": "" }
   print 'jack'
-  feed
+  feed 3
 }
