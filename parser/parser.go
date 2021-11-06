@@ -57,8 +57,7 @@ func (p *Parser) Parse() (ast []Expr, err error) {
 
 func (p *Parser) globalDefs() []Expr {
 	exprs := []Expr{}
-
-	for p.match(token.EOF) {
+	for !p.match(token.EOF) {
 		closure := p.taggledClosure()
 		exprs = append(exprs, closure)
 		p.eatAll(token.Newline)
@@ -122,6 +121,7 @@ func (p *Parser) getExpr(tag ...*token.Token) Expr {
 
 	// We expect an optional header argument and then a newline to complete the statement
 	if !p.match(token.Newline) {
+		p.consume("Expect ','", token.Comma)
 		httpHeaderExpr := p.expression()
 		expr.Header = httpHeaderExpr
 		// Consume a Newline
@@ -173,19 +173,18 @@ func (p *Parser) accessor() Expr {
 						token: p.advance(),
 						msg:   "Missing 'Key' value for accessing the map/array",
 					})
-					key := p.expression()
-					p.consume("Expected ']'", token.RightBracket)
-					expr = MapAccessExpr{Name: expr, Key: key}
 				}
+				key := p.expression()
+				p.consume("Expected ']'", token.RightBracket)
+				expr = MapAccessExpr{Name: expr, Key: key}
 			case token.Period:
 				p.advance()
 				ident := p.consume("Expect an attribute name after a '.'", token.Ident)
 				expr = AccessExpr{Var: expr, Field: ident}
 			default:
-				break
+				return expr
 			}
 		}
-		return expr
 	}
 }
 
@@ -222,6 +221,7 @@ func (p *Parser) mapExpr() Expr {
 			key, value = p.mapEntry()
 			entries[key.Literal.(string)] = value
 		}
+		p.eatAll(token.Newline)
 	}
 	p.consume("expect closing '}'", token.RightCurlyBracket)
 	return MapExpr{Entries: entries}
@@ -247,6 +247,7 @@ func (p *Parser) arrayExpr() Expr {
 			p.eatAll(token.Newline)
 			exprs = append(exprs, p.expression())
 		}
+		p.eatAll(token.Newline)
 	}
 	// All expressions have been consumed to this point, we therefore expect a closing Right Bracket
 	p.consume("expect ']'", token.RightBracket)
@@ -266,7 +267,8 @@ func (p *Parser) closure() Expr {
 			paramList = append(paramList, t)
 		}
 	}
-	p.consume("A closure requires a body", token.LeftBracket)
+	p.consume("A closure requires a body", token.RightParen)
+	p.consume("Missing '{' to start the closure body", token.LeftCurlyBracket)
 	body := p.body()
 	return ClosureExpr{Params: paramList, Body: body}
 }

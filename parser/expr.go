@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/kingzbauer/scraperlang/token"
 )
 
@@ -41,6 +43,10 @@ type TaggedClosure struct {
 // Accept implements the Expr interface
 func (expr TaggedClosure) Accept(visitor Visitor, env Environment) interface{} {
 	return visitor.VisitTaggedClosure(expr, env)
+}
+
+func (expr TaggedClosure) String() string {
+	return fmt.Sprintf("<TaggedClosure %s>", expr.Name.Lexeme)
 }
 
 // GetExpr use to invoke the http get for the provided url(s)

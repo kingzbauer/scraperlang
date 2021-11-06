@@ -32,7 +32,10 @@ func (t Tokens) String() string {
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("Token[%d:%d]{Type: %s, Lexeme: %v, Literal: %v}", t.Line, t.Column, t.Type, t.Lexeme, t.Literal)
+	if t.Literal != nil {
+		return fmt.Sprintf("%v", t.Literal)
+	}
+	return fmt.Sprintf("%s", t.Lexeme)
 }
 
 // Error returned when the scanner encounters an unexpected character
