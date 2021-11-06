@@ -1,4 +1,4 @@
 init {
-  print 'jack', 34, true
-  get 'http://github.com'
+  name = "Jack"
+  print name, "Kinga"
 }

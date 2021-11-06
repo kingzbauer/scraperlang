@@ -373,9 +373,9 @@ func (p *Parser) primary() Expr {
 	case token.False:
 		fallthrough
 	case token.Nil:
-		fallthrough
-	case token.Ident:
 		return LiteralExpr{t}
+	case token.Ident:
+		return IdentExpr{t}
 	default:
 		panic(Error{
 			token: t,

@@ -8,6 +8,20 @@ import (
 	"github.com/kingzbauer/scraperlang/token"
 )
 
+// Error defines interpreter errors
+type Error struct {
+	token *token.Token
+	msg   string
+}
+
+func (err Error) Error() string {
+	prefix := ""
+	if err.token != nil {
+		prefix = fmt.Sprintf("[%d:%d]", err.token.Line+1, err.token.Column)
+	}
+	return fmt.Sprintf("%s %s", prefix, err.msg)
+}
+
 // Interpreter implements the Visitor interface and the Eval loop
 type Interpreter struct {
 	ast            []parser.Expr
@@ -48,8 +62,9 @@ func (i *Interpreter) Exec() (err error) {
 		}
 	}()
 
+	e := NewEnvironment(nil, nil)
 	// we start our execution from the init closure
-	i.taggedClosures["init"].Accept(i, nil)
+	i.taggedClosures["init"].Accept(i, e)
 
 	return
 }
@@ -77,8 +92,11 @@ func (i *Interpreter) VisitPrintExpr(expr parser.PrintExpr, e parser.Environment
 	return nil
 }
 
-func (i *Interpreter) VisitAssignExpr(_ parser.AssignExpr, _ parser.Environment) interface{} {
-	panic("not implemented") // TODO: Implement
+// VisitAssignExpr creates a new variable with the value as the expression value
+func (i *Interpreter) VisitAssignExpr(expr parser.AssignExpr, e parser.Environment) interface{} {
+	val := expr.Value.Accept(i, e)
+	e.Set(*expr.Name, val)
+	return val
 }
 
 func (i *Interpreter) VisitCallExpr(_ parser.CallExpr, _ parser.Environment) interface{} {
@@ -116,8 +134,9 @@ func (i *Interpreter) VisitLiteralExpr(expr parser.LiteralExpr, e parser.Environ
 	return nil
 }
 
-func (i *Interpreter) VisitIdentExpr(_ parser.IdentExpr, _ parser.Environment) interface{} {
-	panic("not implemented") // TODO: Implement
+// VisitIdentExpr accesses a stored value
+func (i *Interpreter) VisitIdentExpr(expr parser.IdentExpr, e parser.Environment) interface{} {
+	return e.Get(*expr.Name)
 }
 
 func (i *Interpreter) VisitMapAccessExpr(_ parser.MapAccessExpr, _ parser.Environment) interface{} {
