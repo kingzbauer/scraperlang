@@ -56,7 +56,15 @@ func (p *Parser) Parse() (ast []Expr, err error) {
 }
 
 func (p *Parser) globalDefs() []Expr {
-	return nil
+	exprs := []Expr{}
+
+	for p.match(token.EOF) {
+		closure := p.taggledClosure()
+		exprs = append(exprs, closure)
+		p.eatAll(token.Newline)
+	}
+
+	return exprs
 }
 
 func (p *Parser) taggledClosure() Expr {
@@ -95,6 +103,7 @@ func (p *Parser) body() []Expr {
 				msg:   "Invalid expression statement as a top-level statement",
 			})
 		}
+		p.eatAll(token.Newline)
 	}
 
 	p.consume("Expect '}' to close body", token.RightCurlyBracket)
