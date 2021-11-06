@@ -34,8 +34,8 @@ type Expr interface {
 
 // TaggedClosure defines a top level closure which can be identifiable by a name
 type TaggedClosure struct {
-	Name  *token.Token
-	Exprs []Expr
+	Name *token.Token
+	Body []Expr
 }
 
 // Accept implements the Expr interface

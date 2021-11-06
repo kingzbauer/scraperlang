@@ -60,11 +60,16 @@ func (p *Parser) globalDefs() []Expr {
 }
 
 func (p *Parser) taggledClosure() Expr {
+	taggedClosure := TaggedClosure{}
+
 	p.eatAll(token.Newline)
 	closureName := p.consume("Expected a tagged closure", token.Ident)
 	p.consume("Expected '{' to start the closure body", token.LeftCurlyBracket)
 
-	return nil
+	taggedClosure.Name = closureName
+	taggedClosure.Body = p.body()
+
+	return taggedClosure
 }
 
 func (p *Parser) body() []Expr {
@@ -104,6 +109,14 @@ func (p *Parser) getExpr(tag ...*token.Token) Expr {
 	// We expect at least a single expression as the first argument
 	URL := p.expression()
 	expr.URL = URL
+
+	// We expect an optional header argument and then a newline to complete the statement
+	if !p.match(token.Newline) {
+		httpHeaderExpr := p.expression()
+		expr.Header = httpHeaderExpr
+		// Consume a Newline
+		p.consume("Expect a 'Newline'", token.Newline)
+	}
 
 	return expr
 }
@@ -168,7 +181,7 @@ func (p *Parser) accessor() Expr {
 
 // expressionList returns 0 or more expressions separated with a comma
 // We use the delimiter token to know if we need to return an empty list if
-// encountered as the first thing
+// the delimiter is encountered as the first thing
 func (p *Parser) expressionList(delimiter token.Type) []Expr {
 	// Empty expression list
 	if p.match(delimiter) {
@@ -176,7 +189,7 @@ func (p *Parser) expressionList(delimiter token.Type) []Expr {
 	}
 	exprs := []Expr{p.expression()}
 
-	if p.match(token.Comma) {
+	for p.match(token.Comma) {
 		// We can allow at most  one Newline after a comma
 		p.eatAll(token.Newline)
 		expr := p.expression()
@@ -221,6 +234,7 @@ func (p *Parser) arrayExpr() Expr {
 		expr := p.expression()
 		exprs = append(exprs, expr)
 		for p.match(token.Comma) {
+			p.eatAll(token.Newline)
 			exprs = append(exprs, p.expression())
 		}
 	}
