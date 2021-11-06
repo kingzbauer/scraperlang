@@ -11,7 +11,7 @@ package scraperlang
 	tag							-> "@"IDENT ;
 	printExpr				-> "print" expression ( "," expression )* ;
 	closure					-> "(" params? ")" body ;
-	arrayExpr				-> "[" NEWLINE* expression NEWLINE* ( "," NEWLINE* expression NEWLINE )* "]" ;
+	arrayExpr				-> "[" NEWLINE* expression NEWLINE* ( "," NEWLINE* expression NEWLINE* )* "]" ;
 	mapExpr					-> "{" NEWLINE* mapEntry NEWLINE* ( "," NEWLINE* mapEntry NEWLINE* )* "}" ;
 	mapEntry				-> STRING ":" expression ;
 

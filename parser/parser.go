@@ -63,16 +63,6 @@ func (p *Parser) taggledClosure() Expr {
 	p.eatAll(token.Newline)
 	closureName := p.consume("Expected a tagged closure", token.Ident)
 	p.consume("Expected '{' to start the closure body", token.LeftCurlyBracket)
-	//p.consume("Expected the closure body", token.Newline, token.RightCurlyBracket)
-	//p.eatAll(token.Newline)
-
-	//// If the previous token to be consume is `}` then we are done here
-	//// we have an empty closure
-	//if p.previous().Type == token.RightCurlyBracket {
-	//return TaggedClosure{Name: closureName}
-	//}
-
-	//// proceed to consume the body
 
 	return nil
 }
@@ -223,7 +213,20 @@ func (p *Parser) mapEntry() (*token.Token, Expr) {
 }
 
 func (p *Parser) arrayExpr() Expr {
-	return nil
+	exprs := []Expr{}
+	// Consume all possible newlines after the opening square bracket
+	p.eatAll(token.Newline)
+	// If we don't encounter a closing square bracket, we then expect an expression list
+	if !p.match(token.RightBracket, token.EOF) {
+		expr := p.expression()
+		exprs = append(exprs, expr)
+		for p.match(token.Comma) {
+			exprs = append(exprs, p.expression())
+		}
+	}
+	// All expressions have been consumed to this point, we therefore expect a closing Right Bracket
+	p.consume("expect ']'", token.RightBracket)
+	return ArrayExpr{Entries: exprs}
 }
 
 func (p *Parser) closure() Expr {
