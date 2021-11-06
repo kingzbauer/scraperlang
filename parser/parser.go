@@ -105,7 +105,7 @@ func (p *Parser) body() []Expr {
 				argList := p.expressionList(token.RightParen)
 				exprs = append(exprs, CallExpr{Name: LiteralExpr{Value: t}, Arguments: argList})
 				p.consume("Call expression requires a closing ')'", token.RightParen)
-			} else if p.match(token.Newline) {
+			} else if p.check(token.Newline) {
 				p.addErr(Error{
 					msg:   "call expression without parenthesis requires at least one argument",
 					token: p.previous(),
