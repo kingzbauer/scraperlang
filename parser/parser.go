@@ -95,6 +95,7 @@ func (p *Parser) body() []Expr {
 		case token.Get:
 			exprs = append(exprs, p.getExpr())
 		case token.Print:
+			exprs = append(exprs, p.printExpr())
 		case token.Ident:
 		default:
 			panic(Error{
@@ -127,6 +128,23 @@ func (p *Parser) getExpr(tag ...*token.Token) Expr {
 		// Consume a Newline
 		p.consume("Expect a 'Newline'", token.Newline)
 	}
+
+	return expr
+}
+
+func (p *Parser) printExpr() Expr {
+	// We might want to catch any error thrown when parsing the expressions parsed to print statement
+	// to give a more meaningful, for now we just allow the normal panic handling at the toplevel parse
+	// function
+	expr := PrintExpr{}
+	// We expect at least one expression
+	args := []Expr{p.expression()}
+	for p.match(token.Comma) {
+		p.eatAll(token.Newline)
+		args = append(args, p.expression())
+	}
+	p.consume("Expect 'Newline'", token.Newline)
+	expr.Args = args
 
 	return expr
 }
