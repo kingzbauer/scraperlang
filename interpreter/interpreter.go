@@ -128,9 +128,16 @@ func (i *Interpreter) VisitClosureExpr(expr parser.ClosureExpr, e parser.Environ
 	return NewClosure(e, expr, i)
 }
 
-// VisitAccessExpr access a map/slice by key/index
+// VisitAccessExpr allows the retrieving of attributes from a runtime instance that implements the Accessor
+// interface
 func (i *Interpreter) VisitAccessExpr(expr parser.AccessExpr, e parser.Environment) interface{} {
-	return nil
+	val := expr.Var.Accept(i, e)
+	if accessor, ok := val.(Accessor); ok {
+		return accessor.Get(expr.Field.Lexeme)
+	}
+	panic(Error{
+		msg: fmt.Sprintf("%s does not implement the Accessor interface", val),
+	})
 }
 
 func (i *Interpreter) VisitHTMLAttrAccessor(_ parser.HTMLAttrAccessor, _ parser.Environment) interface{} {
