@@ -137,8 +137,14 @@ func (i *Interpreter) VisitHTMLAttrAccessor(_ parser.HTMLAttrAccessor, _ parser.
 	panic("not implemented") // TODO: Implement
 }
 
-func (i *Interpreter) VisitArrayExpr(_ parser.ArrayExpr, _ parser.Environment) interface{} {
-	panic("not implemented") // TODO: Implement
+// VisitArrayExpr creates a runtime list
+func (i *Interpreter) VisitArrayExpr(expr parser.ArrayExpr, e parser.Environment) interface{} {
+	a := &Array{entries: make([]interface{}, len(expr.Entries))}
+	for index, entry := range expr.Entries {
+		a.entries[index] = entry.Accept(i, e)
+	}
+
+	return a
 }
 
 // VisitMapExpr creates a runtime hash map

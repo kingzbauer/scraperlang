@@ -27,3 +27,18 @@ func (m *Map) String() string {
 type Array struct {
 	entries []interface{}
 }
+
+// GetValue indexes into the list
+func (a *Array) GetValue(key interface{}) interface{} {
+	index, ok := key.(float64)
+	if !ok {
+		panic(Error{
+			msg: "Expected an int as a list index",
+		})
+	}
+	return a.entries[int(index)]
+}
+
+func (a *Array) String() string {
+	return fmt.Sprintf("#Array %v", a.entries)
+}
