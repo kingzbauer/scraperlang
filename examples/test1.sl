@@ -1,6 +1,6 @@
 init {
-  m = {"name": "Jack", "location": "Juja"}
-  m.loop((key, val) {
-     print key, ":", val
+  m = {"nme": "Jack"}
+  m((key, val) {
+    print key, val
   })
 }
