@@ -128,8 +128,9 @@ func (i *Interpreter) VisitClosureExpr(expr parser.ClosureExpr, e parser.Environ
 	return NewClosure(e, expr, i)
 }
 
-func (i *Interpreter) VisitAccessExpr(_ parser.AccessExpr, _ parser.Environment) interface{} {
-	panic("not implemented") // TODO: Implement
+// VisitAccessExpr access a map/slice by key/index
+func (i *Interpreter) VisitAccessExpr(expr parser.AccessExpr, e parser.Environment) interface{} {
+	return nil
 }
 
 func (i *Interpreter) VisitHTMLAttrAccessor(_ parser.HTMLAttrAccessor, _ parser.Environment) interface{} {
@@ -140,8 +141,14 @@ func (i *Interpreter) VisitArrayExpr(_ parser.ArrayExpr, _ parser.Environment) i
 	panic("not implemented") // TODO: Implement
 }
 
-func (i *Interpreter) VisitMapExpr(_ parser.MapExpr, _ parser.Environment) interface{} {
-	panic("not implemented") // TODO: Implement
+// VisitMapExpr creates a runtime hash map
+func (i *Interpreter) VisitMapExpr(expr parser.MapExpr, e parser.Environment) interface{} {
+	m := &Map{instance: make(map[string]interface{})}
+	for key, value := range expr.Entries {
+		v := value.Accept(i, e)
+		m.instance[key] = v
+	}
+	return m
 }
 
 // VisitLiteralExpr returns the underlying literal value
@@ -160,6 +167,15 @@ func (i *Interpreter) VisitIdentExpr(expr parser.IdentExpr, e parser.Environment
 	return e.Get(*expr.Name)
 }
 
-func (i *Interpreter) VisitMapAccessExpr(_ parser.MapAccessExpr, _ parser.Environment) interface{} {
-	panic("not implemented") // TODO: Implement
+// VisitMapAccessExpr indexes into either a list or hash map
+func (i *Interpreter) VisitMapAccessExpr(expr parser.MapAccessExpr, e parser.Environment) interface{} {
+	val := expr.Name.Accept(i, e)
+	// The value needs to implement the Keyer interface
+	if keyer, ok := val.(Keyer); ok {
+		return keyer.GetValue(expr.Key.Accept(i, e))
+	}
+	panic(Error{
+		msg: fmt.Sprintf("%s cannot be indexed", val),
+	})
+
 }
