@@ -328,7 +328,7 @@ func (p *Parser) arrayExpr() Expr {
 	// Consume all possible newlines after the opening square bracket
 	p.eatAll(token.Newline)
 	// If we don't encounter a closing square bracket, we then expect an expression list
-	if !p.match(token.RightBracket, token.EOF) {
+	if !p.check(token.RightBracket, token.EOF) {
 		expr := p.expression()
 		exprs = append(exprs, expr)
 		for p.match(token.Comma) {
