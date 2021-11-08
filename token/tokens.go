@@ -27,6 +27,7 @@ const (
 	Print
 	Get
 	Post
+	Return
 
 	Nil
 	True
