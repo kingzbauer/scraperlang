@@ -99,6 +99,13 @@ func (p *Parser) body() []Expr {
 			exprs = append(exprs, p.getExpr())
 		case token.Print:
 			exprs = append(exprs, p.printExpr())
+		case token.Return:
+			var expr Expr
+			// If the next token is neither a Newline or Closing bracket, we expect an expression
+			if !p.check(token.Newline, token.RightCurlyBracket) {
+				expr = p.expression()
+			}
+			exprs = append(exprs, ReturnExpr{Value: expr})
 		case token.Ident:
 			if p.match(token.Equal) {
 				// Process an assignment

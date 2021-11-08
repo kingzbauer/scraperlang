@@ -49,12 +49,13 @@ func (err Error) Error() string {
 }
 
 var keywords = map[string]Type{
-	"true":  True,
-	"false": False,
-	"nil":   Nil,
-	"print": Print,
-	"get":   Get,
-	"post":  Post,
+	"true":   True,
+	"false":  False,
+	"nil":    Nil,
+	"print":  Print,
+	"get":    Get,
+	"post":   Post,
+	"return": Return,
 }
 
 // Scanner given a byte string will go through each byte character and tokenize them

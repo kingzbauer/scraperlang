@@ -27,6 +27,7 @@ type Visitor interface {
 	VisitLiteralExpr(LiteralExpr, Environment) interface{}
 	VisitIdentExpr(IdentExpr, Environment) interface{}
 	VisitMapAccessExpr(MapAccessExpr, Environment) interface{}
+	VisitReturnExpr(ReturnExpr, Environment) interface{}
 }
 
 // Expr every expression type must implement the expression interface
@@ -177,4 +178,14 @@ type IdentExpr struct {
 // Accept implements the Expr interface
 func (expr IdentExpr) Accept(visitor Visitor, env Environment) interface{} {
 	return visitor.VisitIdentExpr(expr, env)
+}
+
+// ReturnExpr causes a function to return at the point of encounter
+type ReturnExpr struct {
+	Value Expr
+}
+
+// Accept implements the Expr interface
+func (expr ReturnExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitReturnExpr(expr, env)
 }

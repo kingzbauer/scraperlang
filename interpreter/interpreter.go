@@ -8,6 +8,11 @@ import (
 	"github.com/kingzbauer/scraperlang/token"
 )
 
+// ReturnException is used to shortcircuit the flow of the current routine by way of panic
+type ReturnException struct {
+	Value interface{}
+}
+
 // Error defines interpreter errors
 type Error struct {
 	token *token.Token
@@ -26,6 +31,17 @@ func (err Error) Error() string {
 type Interpreter struct {
 	ast            []parser.Expr
 	taggedClosures map[string]parser.TaggedClosure
+}
+
+// VisitReturnExpr evaluates a return expression
+func (i *Interpreter) VisitReturnExpr(expr parser.ReturnExpr, e parser.Environment) interface{} {
+	var value interface{}
+	if expr.Value != nil {
+		value = expr.Value.Accept(i, e)
+	}
+	panic(ReturnException{
+		Value: value,
+	})
 }
 
 // New creates a new Intepreter instance
