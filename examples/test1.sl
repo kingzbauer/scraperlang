@@ -1,7 +1,18 @@
 init {
-  array = [1, 2, 3, 4, 5, 6]
-  print array.last
-  print array.first
-  array = []
-  print array.size
+  prefix = (pref) {
+    fn = (phrase) { print pref, phrase }
+  }
+  hi = prefix('Hi')
+  hi('Jack')
+  goodnight = prefix('Goodnight')
+  goodnight('Emily')
+  hi('Emily')
+
+  print ''
+  arr = ['Jack', 'Emily', 'Buddy']
+  arr(hi)
+
+  val = () { print "jack" }
+  print val
+  val()
 }

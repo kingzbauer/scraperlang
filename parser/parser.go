@@ -87,8 +87,6 @@ func (p *Parser) taggledClosure() Expr {
 func (p *Parser) body() []Expr {
 	var exprs []Expr
 
-	// At the moment we expect at least one new line after the opening curly bracket
-	p.consume("Expect a Newline after and opening bracket", token.Newline)
 	p.eatAll(token.Newline)
 
 	for !p.check(token.RightCurlyBracket, token.EOF) {
@@ -147,9 +145,12 @@ func (p *Parser) body() []Expr {
 				msg:   "Invalid expression statement as a top-level statement",
 			})
 		}
-		// Consume a Newline after each expression statement
-		p.consume("Expect a 'Newline'", token.Newline)
-		p.eatAll(token.Newline)
+
+		if !p.check(token.RightCurlyBracket) {
+			// Consume a Newline after each expression statement
+			p.consume("Expect a 'Newline'", token.Newline)
+			p.eatAll(token.Newline)
+		}
 	}
 
 	p.consume("Expect '}' to close body", token.RightCurlyBracket)
