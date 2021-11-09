@@ -28,6 +28,7 @@ type Visitor interface {
 	VisitIdentExpr(IdentExpr, Environment) interface{}
 	VisitMapAccessExpr(MapAccessExpr, Environment) interface{}
 	VisitReturnExpr(ReturnExpr, Environment) interface{}
+	VisitBodyExpr(BodyExpr, Environment) interface{}
 }
 
 // Expr every expression type must implement the expression interface
@@ -38,7 +39,7 @@ type Expr interface {
 // TaggedClosure defines a top level closure which can be identifiable by a name
 type TaggedClosure struct {
 	Name *token.Token
-	Body []Expr
+	Body Expr
 }
 
 // Accept implements the Expr interface
@@ -99,7 +100,7 @@ func (expr CallExpr) Accept(visitor Visitor, env Environment) interface{} {
 // This specific closure cannot appear on the top level definition
 type ClosureExpr struct {
 	Params token.Tokens
-	Body   []Expr
+	Body   Expr
 }
 
 // Accept implements the Expr interface
@@ -188,4 +189,14 @@ type ReturnExpr struct {
 // Accept implements the Expr interface
 func (expr ReturnExpr) Accept(visitor Visitor, env Environment) interface{} {
 	return visitor.VisitReturnExpr(expr, env)
+}
+
+// BodyExpr contains all the expressions that are contained within the pair for a set of curly brackets
+type BodyExpr struct {
+	Exprs []Expr
+}
+
+// Accept implements the Expr interface
+func (expr BodyExpr) Accept(visitor Visitor, env Environment) interface{} {
+	return visitor.VisitBodyExpr(expr, env)
 }

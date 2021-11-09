@@ -84,7 +84,7 @@ func (p *Parser) taggledClosure() Expr {
 	return taggedClosure
 }
 
-func (p *Parser) body() []Expr {
+func (p *Parser) body() Expr {
 	var exprs []Expr
 
 	p.eatAll(token.Newline)
@@ -161,7 +161,7 @@ func (p *Parser) body() []Expr {
 	}
 
 	p.consume("Expect '}' to close body", token.RightCurlyBracket)
-	return exprs
+	return BodyExpr{Exprs: exprs}
 }
 
 func (p *Parser) assignExpr(t *token.Token) Expr {

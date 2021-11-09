@@ -25,11 +25,8 @@ func (c *closure) Call(args ...interface{}) interface{} {
 		initEnv[c.closureAst.Params[i].Lexeme] = arg
 	}
 	e := NewEnvironment(initEnv, c.closureEnv)
-	var val interface{}
-	for _, expr := range c.closureAst.Body {
-		val = expr.Accept(c.i, e)
-	}
-	return val
+	v := c.closureAst.Body.Accept(c.i, e)
+	return v
 }
 
 func (c *closure) Arity() int {

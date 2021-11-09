@@ -33,6 +33,24 @@ type Interpreter struct {
 	taggedClosures map[string]parser.TaggedClosure
 }
 
+// VisitBodyExpr executes all the expressions in the body expressions
+func (i *Interpreter) VisitBodyExpr(expr parser.BodyExpr, e parser.Environment) (val interface{}) {
+	defer func() {
+		if v := recover(); v != nil {
+			if returnExp, ok := v.(ReturnException); ok {
+				val = returnExp.Value
+			} else {
+				panic(v)
+			}
+		}
+	}()
+
+	for _, exp := range expr.Exprs {
+		exp.Accept(i, e)
+	}
+	return
+}
+
 // VisitReturnExpr evaluates a return expression
 func (i *Interpreter) VisitReturnExpr(expr parser.ReturnExpr, e parser.Environment) interface{} {
 	var value interface{}
@@ -87,9 +105,7 @@ func (i *Interpreter) Exec() (err error) {
 
 // VisitTaggedClosure visits the tagged closure expression
 func (i *Interpreter) VisitTaggedClosure(expr parser.TaggedClosure, e parser.Environment) interface{} {
-	for _, exp := range expr.Body {
-		exp.Accept(i, e)
-	}
+	expr.Body.Accept(i, e)
 	return nil
 }
 

@@ -1,6 +1,6 @@
 init {
   prefix = (pref) {
-    fn = (phrase) { print pref, phrase }
+    return (phrase) { print pref, phrase }
   }
   hi = prefix('Hi')
   hi('Jack')
@@ -12,7 +12,8 @@ init {
   arr = ['Jack', 'Emily', 'Buddy']
   arr(hi)
 
-  val = () { print "jack" }
-  print val
-  val()
+  val = () { 
+    val = 34 
+  }
+  print val()
 }
