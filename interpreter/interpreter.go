@@ -3,6 +3,7 @@ package interpreter
 import (
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/kingzbauer/scraperlang/parser"
 	"github.com/kingzbauer/scraperlang/token"
@@ -31,6 +32,7 @@ func (err Error) Error() string {
 type Interpreter struct {
 	ast            []parser.Expr
 	taggedClosures map[string]parser.TaggedClosure
+	wg             *sync.WaitGroup
 }
 
 // VisitBodyExpr executes all the expressions in the body expressions
@@ -81,6 +83,8 @@ func New(ast []parser.Expr) (*Interpreter, error) {
 		return nil, errors.New("Missing 'init' tagged closure")
 	}
 
+	i.wg = &sync.WaitGroup{}
+
 	return i, nil
 }
 
@@ -100,6 +104,8 @@ func (i *Interpreter) Exec() (err error) {
 	// we start our execution from the init closure
 	i.taggedClosures["init"].Accept(i, e)
 
+	// Wait for all closures to finish before exiting
+	i.wg.Wait()
 	return
 }
 
