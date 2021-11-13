@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/panjf2000/ants/v2"
+
 	"github.com/kingzbauer/scraperlang/parser"
 	"github.com/kingzbauer/scraperlang/token"
 )
@@ -33,6 +35,7 @@ type Interpreter struct {
 	ast            []parser.Expr
 	taggedClosures map[string]parser.TaggedClosure
 	wg             *sync.WaitGroup
+	pool           *ants.Pool
 }
 
 // VisitBodyExpr executes all the expressions in the body expressions
@@ -84,6 +87,16 @@ func New(ast []parser.Expr) (*Interpreter, error) {
 	}
 
 	i.wg = &sync.WaitGroup{}
+	var err error
+	if i.pool, err = ants.NewPool(10, ants.WithPanicHandler(func(val interface{}) {
+		if err, ok := val.(Error); ok {
+			fmt.Print(err)
+		} else {
+			panic(val)
+		}
+	})); err != nil {
+		return nil, err
+	}
 
 	return i, nil
 }
@@ -115,8 +128,50 @@ func (i *Interpreter) VisitTaggedClosure(expr parser.TaggedClosure, e parser.Env
 	return nil
 }
 
-func (i *Interpreter) VisitGetExpr(_ parser.GetExpr, _ parser.Environment) interface{} {
-	panic("not implemented") // TODO: Implement
+// VisitGetExpr given a get expression, executes the requested http call and calls
+// the specified tagged closure
+func (i *Interpreter) VisitGetExpr(expr parser.GetExpr, e parser.Environment) interface{} {
+	var (
+		url string
+		ok  bool
+	)
+	val := expr.URL.Accept(i, e)
+	if url, ok = val.(string); !ok {
+		panic(Error{
+			msg: "'get' expects a URL string as it's 1st argument",
+		})
+	}
+
+	var headers map[string]interface{}
+	if expr.Header != nil {
+		val := expr.Header.Accept(i, e)
+		mapVal, ok := val.(Map)
+		if !ok {
+			panic(Error{
+				msg: fmt.Sprintf("'get', requires a map as it's 2nd argument"),
+			})
+		}
+		headers = mapVal.instance
+	}
+	cfg := getWorkConfig{
+		// We will use default as the, well, 'default' tag
+		tag:     "default",
+		url:     url,
+		headers: headers,
+	}
+	if expr.Tag != nil {
+		cfg.tag = expr.Tag.Lexeme
+	}
+
+	work := i.newGetWork(cfg)
+	i.wg.Add(1)
+	if err := i.pool.Submit(work); err != nil {
+		panic(Error{
+			msg: err.Error(),
+		})
+	}
+
+	return nil
 }
 
 // VisitPrintExpr prints the provided arguments to stdout

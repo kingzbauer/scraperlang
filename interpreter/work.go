@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -62,6 +63,10 @@ func (i *Interpreter) newGetWork(cfg getWorkConfig) func() {
 			// TODO: This will be handled by the Resolver by doing a pre-semantic analysis
 			if closure, ok := i.taggedClosures[cfg.tag]; ok {
 				closure.Accept(i, env)
+			} else {
+				panic(Error{
+					msg: fmt.Sprintf("Unable to find the tagged closure %q\n", cfg.tag),
+				})
 			}
 		}
 	}
