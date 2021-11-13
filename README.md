@@ -1,4 +1,4 @@
-# Scraper-lang
+# Scraper-lang (WIP)
 A DSL aimed at making writing web scrapers/crawlers a breeze
 
 ## Example
