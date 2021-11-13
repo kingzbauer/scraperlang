@@ -145,7 +145,7 @@ func (i *Interpreter) VisitGetExpr(expr parser.GetExpr, e parser.Environment) in
 	var headers map[string]interface{}
 	if expr.Header != nil {
 		val := expr.Header.Accept(i, e)
-		mapVal, ok := val.(Map)
+		mapVal, ok := val.(*Map)
 		if !ok {
 			panic(Error{
 				msg: fmt.Sprintf("'get', requires a map as it's 2nd argument"),
@@ -160,7 +160,7 @@ func (i *Interpreter) VisitGetExpr(expr parser.GetExpr, e parser.Environment) in
 		headers: headers,
 	}
 	if expr.Tag != nil {
-		cfg.tag = expr.Tag.Lexeme
+		cfg.tag = expr.Tag.Literal.(string)
 	}
 
 	work := i.newGetWork(cfg)
