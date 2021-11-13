@@ -1,9 +1,9 @@
 init {
-  get "https://leannx.com", { "Authorization": "Token asdflkjasdflj" }
+  get "https://google.com", { "Authorization": "Token asdflkjasdflj" }
   headers = {
     "Accept": "application/json"
   }
-  @anchors get "https://leannx.com", headers
+  @anchors get "https://google.com", headers
 
   urls = ['https://google.com', 'https://chura.co.ke']
   @anchors get urls, headers
